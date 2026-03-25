@@ -1,0 +1,20 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #07070f;
+  color: #f0eeff;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; }
+
+input::placeholder { color: #333355; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d0d18; }
+::-webkit-scrollbar-thumb { background: #ff5c3540; border-radius: 3px; }
+
+@media (max-width: 600px) {
+  body { font-size: 14px; }
+}

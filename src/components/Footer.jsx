@@ -12,10 +12,6 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col items-center md:items-end">
-          <div className="group relative px-6 py-2 border-2 border-white bg-transparent text-white font-black uppercase text-sm mb-4 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] cursor-default">
-            <span className="relative z-10">ENGINEERED BY ARU</span>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-          </div>
           <p className="text-gray-500 font-mono text-xs">
             © {new Date().getFullYear()} NIGHTNOVA. ALL RIGHTS RESERVED.
           </p>

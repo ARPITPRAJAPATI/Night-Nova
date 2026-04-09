@@ -6,6 +6,7 @@ import Auth from './pages/Auth'
 import VenueDetail from './pages/VenueDetail'
 
 import Dashboard from './pages/Dashboard'
+import Footer from './components/Footer'
 
 export default function App() {
   const location = useLocation()
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/venue/:id" element={<VenueDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
+      {!isAuthPage && <Footer />}
     </div>
   )
 }

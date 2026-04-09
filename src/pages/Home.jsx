@@ -112,6 +112,12 @@ export default function Home() {
         </motion.div>
       </div>
 
+      {/* Footer Signature - Home Page Only */}
+      <div className="absolute bottom-6 right-10 z-20">
+        <span className="text-[10px] font-black tracking-widest uppercase text-white/40 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-500 cursor-default">
+          Engineered by Aru
+        </span>
+      </div>
     </div>
   )
 }

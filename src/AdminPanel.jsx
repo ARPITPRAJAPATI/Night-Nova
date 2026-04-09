@@ -1,30 +1,26 @@
-import { useState, useRef } from 'react'
-
-const API = 'http://localhost:5000/api'
-
-const GRAD_OPTIONS = [
-  'linear-gradient(135deg,#ff6b35,#f7c59f)',
-  'linear-gradient(135deg,#a855f7,#6366f1)',
-  'linear-gradient(135deg,#ef4444,#f97316)',
-  'linear-gradient(135deg,#06b6d4,#3b82f6)',
-  'linear-gradient(135deg,#10b981,#84cc16)',
-  'linear-gradient(135deg,#f59e0b,#ef4444)',
-  'linear-gradient(135deg,#ec4899,#a855f7)',
-  'linear-gradient(135deg,#6366f1,#06b6d4)',
-]
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, Upload, Loader2, Check } from 'lucide-react'
+import { API } from './config.js'
 
 export default function AdminPanel({ onVenueAdded, onClose }) {
   const [form, setForm] = useState({
     name: '', city: '', type: '', address: '',
-    occupancy: 50, rating: 4.0, tags: '', isOpen: true,
-    grad: GRAD_OPTIONS[0], img: '',
+    occupancy: 0, rating: 4.0, tags: '', isOpen: true,
+    img: '', 
+    phone: '', website: '', instagram: '',
+    openTime: '9:00 PM', closeTime: '4:00 AM',
+    entryFee: 0, dressCode: 'Smart Casual',
+    capacity: 500, priceRange: '₹₹'
   })
-  const [loading, setLoading]         = useState(false)
-  const [uploading, setUploading]     = useState(false)
-  const [uploadProgress, setProgress] = useState(0)
-  const [success, setSuccess]         = useState(false)
-  const [error, setError]             = useState('')
-  const [preview, setPreview]         = useState('')
+  
+  const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [preview, setPreview] = useState('')
+  
   const fileRef = useRef()
 
   const handle = e => {
@@ -32,31 +28,24 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
   }
 
-  // Upload image to S3 via presigned URL
   const handleFileChange = async e => {
     const file = e.target.files[0]
     if (!file) return
-
-    // Show local preview immediately
     setPreview(URL.createObjectURL(file))
     setUploading(true)
-    setProgress(0)
+    setUploadProgress(0)
     setError('')
-
+    
     try {
-      // Step 1: Get presigned URL from backend
       const res = await fetch(
         `${API}/upload/presign?filename=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type)}`
       )
       const { uploadUrl, imageUrl } = await res.json()
-
-      // Step 2: Upload directly to S3
+      
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.upload.onprogress = e => {
-          if (e.lengthComputable) {
-            setProgress(Math.round((e.loaded / e.total) * 100))
-          }
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100))
         }
         xhr.onload = () => xhr.status === 200 ? resolve() : reject(new Error('Upload failed'))
         xhr.onerror = () => reject(new Error('Upload failed'))
@@ -64,10 +53,9 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
         xhr.setRequestHeader('Content-Type', file.type)
         xhr.send(file)
       })
-
-      // Step 3: Save final S3 URL to form
+      
       setForm(f => ({ ...f, img: imageUrl }))
-      setProgress(100)
+      setUploadProgress(100)
     } catch (err) {
       setError('Image upload failed: ' + err.message)
       setPreview('')
@@ -82,264 +70,205 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
     }
     setLoading(true)
     setError('')
+    
     try {
+      const token = localStorage.getItem('nn_token')
       const res = await fetch(`${API}/venues`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...form,
           occupancy: Number(form.occupancy),
-          rating:    Number(form.rating),
+          rating: Number(form.rating),
+          entryFee: Number(form.entryFee),
+          capacity: Number(form.capacity),
           tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
           img: form.img || undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
+      
       setSuccess(true)
       onVenueAdded(data)
-      setTimeout(() => {
-        setSuccess(false)
-        setPreview('')
-        setProgress(0)
-        setForm({
-          name: '', city: '', type: '', address: '',
-          occupancy: 50, rating: 4.0, tags: '', isOpen: true,
-          grad: GRAD_OPTIONS[0], img: '',
-        })
-      }, 2000)
+      setTimeout(onClose, 1500)
     } catch (err) {
       setError(err.message)
     }
     setLoading(false)
   }
 
-  const inputStyle = {
-    width: '100%', padding: '10px 14px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 10, color: '#fff', fontSize: 13,
-    outline: 'none',
-  }
-
-  const labelStyle = {
-    fontSize: 9, letterSpacing: '2px', fontWeight: 700,
-    color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'block',
-  }
+  const inputClasses = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-accent transition-all"
+  const labelClasses = "text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2 block ml-2"
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(12px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 20,
-    }}>
-      <div style={{
-        background: '#0e0b1e', borderRadius: 24,
-        border: '1px solid rgba(255,255,255,0.1)',
-        width: '100%', maxWidth: 520,
-        maxHeight: '90vh', overflowY: 'auto',
-        padding: 28,
-      }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-brand-dark/80 backdrop-blur-2xl"
+      />
+      
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto glass rounded-[2.5rem] border border-white/10 shadow-2xl relative z-10 scrollbar-none"
+      >
+        <div className="sticky top-0 glass border-b border-white/5 px-8 sm:px-12 py-6 flex justify-between items-center z-20">
           <div>
-            <div style={{ fontSize: 9, letterSpacing: '3px', color: 'rgba(168,85,247,0.7)', marginBottom: 4, fontWeight: 700 }}>ADMIN PANEL</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>Add New Venue</div>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-brand-accent mb-1">NightNova Admin</h3>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Onboard New Venue</h2>
           </div>
-          <button onClick={onClose} style={{
-            width: 34, height: 34, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#fff', cursor: 'pointer', fontSize: 14,
-          }}>✕</button>
+          <button onClick={onClose} className="w-10 h-10 rounded-full glass hover:bg-red-500/20 hover:text-red-500 transition-all flex items-center justify-center border border-white/5">
+            <X size={20} />
+          </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="p-8 sm:p-12">
+          <div className="grid md:grid-cols-2 gap-10">
+            {/* Left Column: Basic Info */}
+            <div className="space-y-6">
+              <div>
+                <label className={labelClasses}>Venue Identity *</label>
+                <input name="name" value={form.name} onChange={handle} placeholder="e.g. Kitty Su" className={inputClasses} />
+              </div>
 
-          {/* Name */}
-          <div>
-            <label style={labelStyle}>VENUE NAME *</label>
-            <input name="name" value={form.name} onChange={handle}
-              placeholder="e.g. Kitty Su" style={inputStyle} />
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClasses}>City Slug *</label>
+                  <input name="city" value={form.city} onChange={handle} placeholder="delhi" className={inputClasses} />
+                </div>
+                <div>
+                  <label className={labelClasses}>Identity Reveal *</label>
+                  <input name="type" value={form.type} onChange={handle} placeholder="Club / Bar" className={inputClasses} />
+                </div>
+              </div>
 
-          {/* City + Type */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={labelStyle}>CITY SLUG *</label>
-              <input name="city" value={form.city} onChange={handle}
-                placeholder="delhi / gurgaon / noida" style={inputStyle} />
+              <div>
+                <label className={labelClasses}>Physical Coordinates *</label>
+                <input name="address" value={form.address} onChange={handle} placeholder="Sector 29, Gurgaon" className={inputClasses} />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <label className={labelClasses}>Atmospheric Tags</label>
+                  <input name="tags" value={form.tags} onChange={handle} placeholder="Rooftop, EDM, Lite" className={inputClasses} />
+                </div>
+                <div>
+                  <label className={labelClasses}>Price Tier</label>
+                  <select name="priceRange" value={form.priceRange} onChange={handle} className={inputClasses}>
+                    <option value="₹">₹</option>
+                    <option value="₹₹">₹₹</option>
+                    <option value="₹₹₹">₹₹₹</option>
+                    <option value="₹₹₹₹">₹₹₹₹</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClasses}>Initial Heat %</label>
+                  <input name="occupancy" type="number" value={form.occupancy} onChange={handle} className={inputClasses} />
+                </div>
+                <div>
+                  <label className={labelClasses}>Starting Rating</label>
+                  <input name="rating" type="number" step="0.1" value={form.rating} onChange={handle} className={inputClasses} />
+                </div>
+              </div>
             </div>
-            <div>
-              <label style={labelStyle}>TYPE *</label>
-              <input name="type" value={form.type} onChange={handle}
-                placeholder="Club / Lounge / Bar" style={inputStyle} />
-            </div>
-          </div>
 
-          {/* Address */}
-          <div>
-            <label style={labelStyle}>ADDRESS *</label>
-            <input name="address" value={form.address} onChange={handle}
-              placeholder="e.g. Sector 29, Gurgaon" style={inputStyle} />
-          </div>
-
-          {/* ── IMAGE UPLOAD ── */}
-          <div>
-            <label style={labelStyle}>VENUE IMAGE</label>
-
-            {/* Upload area */}
-            <div
-              onClick={() => fileRef.current.click()}
-              style={{
-                border: `2px dashed ${preview ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                borderRadius: 12, overflow: 'hidden',
-                cursor: 'pointer', transition: 'border-color 0.2s',
-                background: 'rgba(255,255,255,0.02)',
-                minHeight: 120,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                position: 'relative',
-              }}
-            >
-              {preview ? (
-                <>
-                  <img src={preview} alt="preview"
-                    style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }} />
-                  {/* progress overlay */}
-                  {uploading && (
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'rgba(0,0,0,0.6)',
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'center', gap: 10,
-                    }}>
-                      <div style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>
-                        Uploading to S3... {uploadProgress}%
-                      </div>
-                      <div style={{ width: '70%', height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
-                        <div style={{
-                          width: `${uploadProgress}%`, height: '100%',
-                          background: 'linear-gradient(135deg,#a855f7,#ec4899)',
-                          borderRadius: 2, transition: 'width 0.3s',
-                        }} />
-                      </div>
+            {/* Right Column: Visuals & Contact */}
+            <div className="space-y-6">
+              <label className={labelClasses}>Visual Identity</label>
+              <div 
+                onClick={() => fileRef.current.click()}
+                className="h-44 rounded-3xl border-2 border-dashed border-white/5 bg-white/5 overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:border-brand-accent/30 transition-all active:scale-[0.98] group relative"
+              >
+                {preview ? (
+                  <>
+                    <img src={preview} alt="Preview" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">Swap Visual</span>
                     </div>
-                  )}
-                  {!uploading && uploadProgress === 100 && (
-                    <div style={{
-                      position: 'absolute', top: 8, right: 8,
-                      background: 'rgba(48,209,88,0.9)', borderRadius: 20,
-                      padding: '4px 10px', fontSize: 10, fontWeight: 700, color: '#fff',
-                    }}>✅ Uploaded to S3</div>
-                  )}
-                </>
-              ) : (
-                <div style={{ textAlign: 'center', padding: 24 }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>📸</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
-                    Click to upload image
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 text-white/20 group-hover:text-brand-accent transition-colors">
+                      <Upload size={20} />
+                    </div>
+                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Upload Cover Visual</span>
                   </div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
-                    JPG, PNG, WEBP supported
+                )}
+                
+                <AnimatePresence>
+                  {uploading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-brand-dark/90 flex flex-col items-center justify-center gap-3">
+                      <Loader2 className="text-brand-accent animate-spin" size={24} />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">Streaming… {uploadProgress}%</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClasses}>Phone Pulse</label>
+                  <input name="phone" value={form.phone} onChange={handle} placeholder="+91..." className={inputClasses} />
+                </div>
+                <div>
+                  <label className={labelClasses}>Instagram ID</label>
+                  <input name="instagram" value={form.instagram} onChange={handle} placeholder="@venue" className={inputClasses} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClasses}>Operational Hours</label>
+                  <div className="flex gap-2">
+                    <input name="openTime" value={form.openTime} onChange={handle} placeholder="9PM" className={inputClasses} />
+                    <input name="closeTime" value={form.closeTime} onChange={handle} placeholder="4AM" className={inputClasses} />
                   </div>
                 </div>
-              )}
-            </div>
+                <div>
+                  <label className={labelClasses}>Entry Protocol</label>
+                  <input name="entryFee" type="number" value={form.entryFee} onChange={handle} placeholder="Fee in ₹" className={inputClasses} />
+                </div>
+              </div>
 
-            <input
-              ref={fileRef} type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-          </div>
-
-          {/* Occupancy + Rating */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={labelStyle}>OCCUPANCY: {form.occupancy}%</label>
-              <input name="occupancy" type="range" min="0" max="100"
-                value={form.occupancy} onChange={handle}
-                style={{ width: '100%', accentColor: '#a855f7' }} />
-            </div>
-            <div>
-              <label style={labelStyle}>RATING: {form.rating}</label>
-              <input name="rating" type="range" min="0" max="5" step="0.1"
-                value={form.rating} onChange={handle}
-                style={{ width: '100%', accentColor: '#a855f7' }} />
+              <div className="flex items-center gap-4 pt-4">
+                <div className="flex-1 flex items-center gap-3 glass px-4 py-3 rounded-xl border border-white/5">
+                  <input name="isOpen" type="checkbox" checked={form.isOpen} onChange={handle} className="w-4 h-4 accent-brand-accent" />
+                  <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Live Status: OPEN</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Tags */}
-          <div>
-            <label style={labelStyle}>TAGS (comma separated)</label>
-            <input name="tags" value={form.tags} onChange={handle}
-              placeholder="EDM, Rooftop, Live Music" style={inputStyle} />
+          <div className="mt-12 pt-10 border-t border-white/5 space-y-6">
+            {error && (
+              <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-center text-xs font-bold text-red-500 uppercase tracking-widest drop-shadow-md">
+                Protocol Error: {error}
+              </motion.div>
+            )}
+            
+            <button 
+              onClick={submit}
+              disabled={loading || uploading}
+              className="w-full bg-gradient-to-r from-brand-accent to-brand-accent-light text-white font-bold py-5 rounded-2xl tracking-[0.2em] uppercase text-xs hover:shadow-[0_0_50px_rgba(124,58,237,0.4)] transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-2xl border border-brand-accent-light"
+            >
+              {loading ? <Loader2 className="animate-spin" size={18} /> : success ? <Check size={18} /> : null}
+              {loading ? 'Transmitting Data…' : success ? 'Venue Deployed' : 'Deploy Venue to Grid'}
+            </button>
           </div>
-
-          {/* Gradient picker */}
-          <div>
-            <label style={labelStyle}>CARD COLOR</label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {GRAD_OPTIONS.map(g => (
-                <div key={g} onClick={() => setForm(f => ({ ...f, grad: g }))}
-                  style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: g, cursor: 'pointer',
-                    border: form.grad === g ? '2px solid #fff' : '2px solid transparent',
-                    transition: 'border 0.15s',
-                  }} />
-              ))}
-            </div>
-          </div>
-
-          {/* Is Open */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <input name="isOpen" type="checkbox" checked={form.isOpen}
-              onChange={handle} style={{ accentColor: '#a855f7', width: 16, height: 16 }} />
-            <label style={{ ...labelStyle, marginBottom: 0 }}>OPEN NOW</label>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div style={{
-              padding: '10px 14px', borderRadius: 10,
-              background: 'rgba(255,45,85,0.1)',
-              border: '1px solid rgba(255,45,85,0.3)',
-              color: '#ff2d55', fontSize: 12,
-            }}>
-              ❌ {error}
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div style={{
-              padding: '10px 14px', borderRadius: 10,
-              background: 'rgba(48,209,88,0.1)',
-              border: '1px solid rgba(48,209,88,0.3)',
-              color: '#30d158', fontSize: 12,
-            }}>
-              ✅ Venue added successfully!
-            </div>
-          )}
-
-          {/* Submit */}
-          <button onClick={submit} disabled={loading || uploading} style={{
-            width: '100%', padding: 15, borderRadius: 14, border: 'none',
-            background: 'linear-gradient(135deg,#a855f7,#ec4899)',
-            color: '#fff', fontSize: 14, fontWeight: 800,
-            cursor: loading || uploading ? 'not-allowed' : 'pointer',
-            opacity: loading || uploading ? 0.7 : 1,
-            transition: 'opacity 0.15s',
-          }}>
-            {loading ? 'Adding...' : uploading ? 'Waiting for upload...' : '✦ Add Venue to MongoDB'}
-          </button>
-
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

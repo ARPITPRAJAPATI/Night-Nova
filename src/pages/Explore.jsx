@@ -18,16 +18,33 @@ export default function Explore() {
 
   useEffect(() => {
     fetch(`${API}/cities`)
-      .then(res => res.json())
-      .then(data => { setCities(data); if (data.length > 0) setCity(data[0].slug) })
+      .then(res => {
+        if (!res.ok) throw new Error('API failed')
+        return res.json()
+      })
+      .then(data => { 
+        setCities(data)
+        if (data.length > 0) setCity(data[0].slug)
+        else setLoading(false)
+      })
+      .catch(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    if (!city) return
+    if (!city) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     fetch(`${API}/venues?city=${city}`)
-      .then(res => res.json())
-      .then(data => { setVenues(data); setLoading(false) })
+      .then(res => {
+        if (!res.ok) throw new Error('API failed')
+        return res.json()
+      })
+      .then(data => { 
+        setVenues(data)
+        setLoading(false) 
+      })
       .catch(() => setLoading(false))
   }, [city])
 

@@ -8,12 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('nn_user');
-    const token = localStorage.getItem('nn_token');
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('nn_token');
+      if (token) {
+        try {
+          const res = await fetch(`${API}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setUser(data);
+          } else {
+            logout();
+          }
+        } catch (err) {
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -25,8 +39,7 @@ export const AuthProvider = ({ children }) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     
-    localStorage.setItem('nn_token', data.token);
-    localStorage.setItem('nn_user', JSON.stringify(data.user));
+    localStorage.setItem('nn_token', data.accessToken);
     setUser(data.user);
     return data.user;
   };
@@ -40,15 +53,14 @@ export const AuthProvider = ({ children }) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     
-    localStorage.setItem('nn_token', data.token);
-    localStorage.setItem('nn_user', JSON.stringify(data.user));
+    localStorage.setItem('nn_token', data.accessToken);
     setUser(data.user);
     return data.user;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch(`${API}/auth/logout`, { method: 'POST' });
     localStorage.removeItem('nn_token');
-    localStorage.removeItem('nn_user');
     setUser(null);
   };
 

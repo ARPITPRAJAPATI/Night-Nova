@@ -61,7 +61,7 @@ export default function BookingModal({ venue, onClose }) {
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="w-full max-w-xl glass rounded-[2.5rem] border border-white/10 shadow-2xl relative z-10 overflow-hidden"
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto glass rounded-[2.5rem] border border-white/10 shadow-2xl relative z-10"
       >
         <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 rounded-full glass hover:bg-white/10 transition-all flex items-center justify-center z-20 border border-white/5">
           <X size={20} className="text-white/60" />

@@ -60,14 +60,14 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center justify-center -mt-20"
+          className="flex flex-col items-center justify-center -mt-10 sm:-mt-20"
         >
           <div className="overflow-hidden mb-2 md:mb-4">
             <motion.h1 
               initial={{ y: 100 }}
               animate={{ y: 0 }}
               transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-6xl sm:text-9xl md:text-[10rem] lg:text-[12rem] font-bold tracking-tighter leading-none text-center uppercase"
+              className="text-4xl sm:text-7xl md:text-[10rem] lg:text-[12rem] font-bold tracking-tighter leading-none text-center uppercase"
             >
               NIGHTLIFE
             </motion.h1>
@@ -77,7 +77,7 @@ export default function Home() {
               initial={{ y: 100 }}
               animate={{ y: 0 }}
               transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="text-6xl sm:text-9xl md:text-[10rem] lg:text-[12rem] font-bold tracking-tighter leading-none text-center text-transparent uppercase"
+              className="text-4xl sm:text-7xl md:text-[10rem] lg:text-[12rem] font-bold tracking-tighter leading-none text-center text-transparent uppercase"
               style={{ WebkitTextStroke: '1px rgba(255,255,255,0.7)' }}
             >
               WITHOUT LIMITS.

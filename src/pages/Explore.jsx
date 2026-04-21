@@ -80,7 +80,7 @@ export default function Explore() {
           className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-white/20 pb-8"
         >
           <div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6 uppercase">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-tighter text-white mb-6 uppercase">
               Night <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Discovery</span>
             </h1>
             

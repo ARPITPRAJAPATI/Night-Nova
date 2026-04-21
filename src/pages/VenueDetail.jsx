@@ -82,8 +82,8 @@ export default function VenueDetail() {
                   {venue.isOpen ? '● OPEN NOW' : '○ CLOSED'}
                 </span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white mb-2">{venue.name}</h1>
-              <p className="text-lg md:text-xl text-white/50 font-medium">{venue.address}</p>
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter text-white mb-2">{venue.name}</h1>
+              <p className="text-sm md:text-xl text-white/50 font-medium">{venue.address}</p>
             </div>
             
             <div className="flex gap-4 mb-2">
@@ -118,8 +118,8 @@ export default function VenueDetail() {
               <div>
                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-2">Current Energy Pulse</h3>
                 <div className="flex items-end gap-3">
-                  <span className="text-8xl md:text-9xl font-mono font-bold leading-none tracking-tighter" style={{ color: c }}>{live}</span>
-                  <span className="text-2xl text-white/20 font-mono mb-4 uppercase tracking-tighter font-bold">% cap</span>
+                  <span className="text-6xl sm:text-8xl md:text-9xl font-mono font-bold leading-none tracking-tighter" style={{ color: c }}>{live}</span>
+                  <span className="text-lg sm:text-2xl text-white/20 font-mono mb-4 uppercase tracking-tighter font-bold">% cap</span>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">

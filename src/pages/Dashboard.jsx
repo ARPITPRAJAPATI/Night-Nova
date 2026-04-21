@@ -54,7 +54,7 @@ function CustomerDashboard({ user }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-end gap-8 mb-16 border-b border-white/20 pb-8">
           <div>
             <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-white/50 mb-2">User Profile</h3>
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white uppercase">
+            <h1 className="text-4xl md:text-8xl font-bold tracking-tighter text-white uppercase">
               {user.name.split(' ')[0]}'s <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Dashboard</span>
             </h1>
           </div>
@@ -130,7 +130,7 @@ function OwnerDashboard({ user }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-end gap-8 mb-16 border-b border-white/20 pb-8">
           <div>
             <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/50 mb-2">Partner Portal</h3>
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white uppercase">Command <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Center</span></h1>
+            <h1 className="text-4xl md:text-8xl font-bold tracking-tighter text-white uppercase">Command <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Center</span></h1>
           </div>
           <button 
             onClick={() => setShowAdminPanel(true)}

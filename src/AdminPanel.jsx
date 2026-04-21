@@ -11,7 +11,8 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
     phone: '', website: '', instagram: '',
     openTime: '9:00 PM', closeTime: '4:00 AM',
     entryFee: 0, dressCode: 'Smart Casual',
-    capacity: 500, priceRange: '₹₹'
+    capacity: 500, priceRange: '₹₹',
+    description: '', amenities: ''
   })
   
   const [loading, setLoading] = useState(false)
@@ -86,6 +87,7 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
           entryFee: Number(form.entryFee),
           capacity: Number(form.capacity),
           tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+          amenities: form.amenities.split(',').map(a => a.trim()).filter(Boolean),
           img: form.img || undefined,
         }),
       })
@@ -169,6 +171,16 @@ export default function AdminPanel({ onVenueAdded, onClose }) {
                     <option value="₹₹₹₹">₹₹₹₹</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className={labelClasses}>Amenities (Comma Separated)</label>
+                <input name="amenities" value={form.amenities} onChange={handle} placeholder="WiFi, Valet, VIP" className={inputClasses} />
+              </div>
+
+              <div>
+                <label className={labelClasses}>Intel / Description</label>
+                <textarea name="description" value={form.description} onChange={handle} placeholder="Describe the vibe..." className={`${inputClasses} h-24 resize-none`} />
               </div>
 
               <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-4">

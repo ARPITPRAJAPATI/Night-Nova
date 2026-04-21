@@ -5,6 +5,7 @@ import { API } from '../config'
 import { useAuth } from '../hooks/useAuth'
 import { Link } from 'react-router-dom'
 import AdminPanel from '../AdminPanel'
+import BookingsTable from '../components/BookingsTable'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -103,11 +104,52 @@ function CustomerDashboard({ user }) {
 
 function OwnerDashboard({ user }) {
   const [venues, setVenues] = useState([])
+  const [bookings, setBookings] = useState([])
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API}/venues`).then(r => r.json()).then(setVenues)
-  }, [])
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('nn_token')
+        const vRes = await fetch(`${API}/venues`)
+        const vData = await vRes.json()
+        const owned = vData.filter(v => v.ownerId === user.id || user.role === 'admin')
+        setVenues(owned)
+
+        if (owned.length > 0) {
+          const bRes = await fetch(`${API}/bookings/venue/${owned[0]._id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          setBookings(await bRes.json())
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [user.id, user.role])
+
+  const updateStatus = async (id, status) => {
+    try {
+      const token = localStorage.getItem('nn_token')
+      const res = await fetch(`${API}/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        setBookings(prev => prev.map(b => b._id === id ? { ...b, status } : b))
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-24 px-6 sm:px-10 relative overflow-hidden">
@@ -142,21 +184,35 @@ function OwnerDashboard({ user }) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
            <div className="border border-white/20 p-8 bg-black/50"><div className="text-[10px] text-white/50 uppercase tracking-widest font-mono mb-2">Total Venues</div><div className="text-4xl font-mono text-white">{venues.length}</div></div>
-           <div className="border border-white/20 p-8 bg-black/50"><div className="text-[10px] text-white/50 uppercase tracking-widest font-mono mb-2">Active Capital</div><div className="text-4xl font-mono text-white">₹15.2L</div></div>
-           <div className="border border-white/20 p-8 bg-black/50"><div className="text-[10px] text-white/50 uppercase tracking-widest font-mono mb-2">Pending Clearances</div><div className="text-4xl font-mono text-white">24</div></div>
+           <div className="border border-white/20 p-8 bg-black/50"><div className="text-[10px] text-white/50 uppercase tracking-widest font-mono mb-2">Active Guests</div><div className="text-4xl font-mono text-white">{bookings.filter(b => b.status === 'confirmed').length}</div></div>
+           <div className="border border-white/20 p-8 bg-black/50"><div className="text-[10px] text-white/50 uppercase tracking-widest font-mono mb-2">Pending Requests</div><div className="text-4xl font-mono text-white">{bookings.filter(b => b.status === 'pending').length}</div></div>
         </div>
 
-        <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest">Active Grids</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {venues.map(v => (
-            <div key={v._id} className="border border-white/20 p-2 flex items-center gap-4 group bg-black/50 hover:bg-white hover:text-black transition-colors cursor-pointer">
-              <img src={v.img} className="w-20 h-20 object-cover grayscale" />
-              <div>
-                <h3 className="font-bold text-white group-hover:text-black transition-colors uppercase tracking-tight">{v.name}</h3>
-                <p className="text-[10px] text-white/40 group-hover:text-black/60 uppercase tracking-widest mt-1 font-mono">Heat: <span className="text-white group-hover:text-black">{v.occupancy}%</span></p>
-              </div>
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Content: Booking Requests */}
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest flex items-center gap-3">
+              <span className="w-2 h-2 bg-brand-accent rounded-full animate-pulse" />
+              Incoming Requests
+            </h2>
+            <BookingsTable bookings={bookings} onUpdateStatus={updateStatus} />
+          </div>
+
+          {/* Sidebar: My Venues */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest">Your Grids</h2>
+            <div className="space-y-4">
+              {venues.map(v => (
+                <div key={v._id} className="border border-white/20 p-2 flex items-center gap-4 group bg-black/50 hover:bg-white hover:text-black transition-colors cursor-pointer">
+                  <img src={v.img} className="w-20 h-20 object-cover grayscale" />
+                  <div>
+                    <h3 className="font-bold text-white group-hover:text-black transition-colors uppercase tracking-tight">{v.name}</h3>
+                    <p className="text-[10px] text-white/40 group-hover:text-black/60 uppercase tracking-widest mt-1 font-mono">Heat: <span className="text-white group-hover:text-black">{v.occupancy}%</span></p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 

@@ -6,11 +6,12 @@ import Auth from './pages/Auth'
 import VenueDetail from './pages/VenueDetail'
 
 import Dashboard from './pages/Dashboard'
+import AuthSuccess from './pages/AuthSuccess'
 import Footer from './components/Footer'
 
 export default function App() {
   const location = useLocation()
-  const isAuthPage = location.pathname === '/auth'
+  const isAuthPage = location.pathname === '/auth' || location.pathname === '/auth-success'
 
   return (
     <div className="bg-brand-dark min-h-screen font-sans text-text-primary selection:bg-brand-accent selection:text-white">
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth-success" element={<AuthSuccess />} />
         <Route path="/venue/:id" element={<VenueDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>

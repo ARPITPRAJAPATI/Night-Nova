@@ -77,14 +77,14 @@ export default function Explore() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-white/20 pb-8"
+          className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16 border-b border-white/20 pb-8"
         >
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-4xl md:text-7xl font-bold tracking-tighter text-white mb-6 uppercase">
               Night <span className="text-transparent" style={{ WebkitTextStroke: '1px white' }}>Discovery</span>
             </h1>
             
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none w-full">
               {cities.map(c => (
                 <button
                   key={c.slug}
@@ -104,7 +104,7 @@ export default function Explore() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto shrink-0">
             <div className="relative group flex-1 sm:w-80">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-white/50 group-focus-within:text-white transition-colors" size={18} />
               <input 

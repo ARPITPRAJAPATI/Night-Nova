@@ -8,6 +8,9 @@ import OccBar from '../components/OccBar'
 import { useOsc } from '../hooks/useOsc'
 import { heatColor } from '../utils/heat'
 import BookingModal from '../components/BookingModal'
+import Lightbox from '../components/Lightbox'
+import StarRating from '../components/StarRating'
+import ReviewsSection from '../components/ReviewsSection'
 import { AnimatePresence } from 'framer-motion'
 
 export default function VenueDetail() {
@@ -15,17 +18,20 @@ export default function VenueDetail() {
   const navigate = useNavigate()
   const [venue, setVenue] = useState(null)
   const [showBooking, setShowBooking] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(-1) // -1 means closed
+
   
   const live = useOsc(venue?.occupancy || 0, 3, 2600)
   const c = heatColor(live)
 
   useEffect(() => {
-    fetch(`${API}/venues`)
-      .then(res => res.json())
-      .then(data => {
-        const found = data.find(v => String(v._id) === String(id))
-        setVenue(found)
+    fetch(`${API}/venues/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch venue')
+        return res.json()
       })
+      .then(data => setVenue(data))
+      .catch(err => console.error(err))
   }, [id])
 
   if (!venue) {
@@ -82,7 +88,13 @@ export default function VenueDetail() {
                   {venue.isOpen ? '● OPEN NOW' : '○ CLOSED'}
                 </span>
               </div>
-              <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter text-white mb-2">{venue.name}</h1>
+              <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter text-white">{venue.name}</h1>
+                <div className="hidden sm:flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 mt-2">
+                  <StarRating rating={venue.rating} size={14} />
+                  <span className="text-xs font-bold text-white/80">{venue.rating}</span>
+                </div>
+              </div>
               <p className="text-sm md:text-xl text-white/50 font-medium">{venue.address}</p>
             </div>
             
@@ -154,18 +166,60 @@ export default function VenueDetail() {
             ))}
           </div>
 
-          {/* Atmosphere */}
+          {/* Atmosphere & Vibe */}
           <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5">
              <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-8">Atmosphere & Vibe</h3>
-             <div className="flex flex-wrap gap-3">
+             <div className="flex flex-wrap gap-3 mb-10">
                {venue.tags?.map(t => (
                  <span key={t} className="px-6 py-3 rounded-2xl bg-white/5 border border-white/5 text-sm text-white/80 font-bold hover:bg-white/10 hover:border-white/20 transition-all cursor-default">
                    {t}
                  </span>
                ))}
              </div>
+
+             {venue.description && (
+               <div className="mb-10">
+                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Intel / Description</h3>
+                 <p className="text-white/70 text-sm md:text-base leading-relaxed">{venue.description}</p>
+               </div>
+             )}
+
+             {venue.amenities && venue.amenities.length > 0 && (
+               <div>
+                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Available Amenities</h3>
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                   {venue.amenities.map(a => (
+                     <div key={a} className="flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 bg-brand-accent rounded-full" />
+                       <span className="text-white/80 text-sm font-medium">{a}</span>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )}
           </div>
+
+          {/* Gallery (Day 24 prep) */}
+          {venue.gallery && venue.gallery.length > 0 && (
+            <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5">
+              <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-8">Visual Data</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {venue.gallery.map((g, i) => (
+                  <div 
+                    key={i} 
+                    onClick={() => setLightboxIndex(i)}
+                    className="aspect-square rounded-2xl overflow-hidden border border-white/10 group cursor-pointer"
+                  >
+                    <img src={g} alt={`${venue.name} ${i}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500" />
+                  </div>
+                ))}
+              </div>
+          )}
+
+          {/* Reviews Section (Day 26) */}
+          <ReviewsSection venueId={venue._id} />
         </div>
+
 
         {/* Sidebar */}
         <div className="lg:col-span-1">
@@ -208,6 +262,17 @@ export default function VenueDetail() {
           <BookingModal venue={venue} onClose={() => setShowBooking(false)} />
         )}
       </AnimatePresence>
+
+      {/* Lightbox Rendering */}
+      {lightboxIndex >= 0 && venue.gallery && (
+        <Lightbox 
+          images={venue.gallery}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(-1)}
+          onNext={() => setLightboxIndex((lightboxIndex + 1) % venue.gallery.length)}
+          onPrev={() => setLightboxIndex((lightboxIndex - 1 + venue.gallery.length) % venue.gallery.length)}
+        />
+      )}
     </div>
   )
 }

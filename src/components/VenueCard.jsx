@@ -3,6 +3,7 @@ import StatusDot from './StatusDot'
 import OccBar from './OccBar'
 import { useOsc } from '../hooks/useOsc'
 import { heatColor } from '../utils/heat'
+import StarRating from './StarRating'
 
 export default function VenueCard({ v, onClick, active, onDelete }) {
   const [hov, setHov] = useState(false)
@@ -107,8 +108,15 @@ export default function VenueCard({ v, onClick, active, onDelete }) {
       <div style={{ padding: '12px 14px 14px' }}>
         <OccBar occ={v.occupancy} height={2} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>
-            {v.tags?.[0] || v.city}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>
+              {v.tags?.[0] || v.city}
+            </span>
+            <div style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)' }} />
+            <div className="flex items-center gap-1.5">
+              <StarRating rating={v.rating} size={10} />
+              <span className="text-[10px] font-bold text-white/40">{v.rating}</span>
+            </div>
           </div>
           <div style={{
             fontSize: 11, fontWeight: 600, letterSpacing: '0.5px',

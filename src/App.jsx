@@ -4,6 +4,10 @@ import Home from './pages/Home'
 import Explore from './pages/Explore'
 import Auth from './pages/Auth'
 import VenueDetail from './pages/VenueDetail'
+import EventDetail from './pages/EventDetail'
+import CityDetail from './pages/CityDetail'
+import GroupPlanner from './pages/GroupPlanner'
+import CheckInConsole from './pages/CheckInConsole'
 
 import Dashboard from './pages/Dashboard'
 import AuthSuccess from './pages/AuthSuccess'
@@ -22,6 +26,10 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
         <Route path="/venue/:id" element={<VenueDetail />} />
+        <Route path="/event/:id" element={<EventDetail />} />
+        <Route path="/city/:slug" element={<CityDetail />} />
+        <Route path="/group/:id" element={<GroupPlanner />} />
+        <Route path="/checkin" element={<CheckInConsole />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
       {!isAuthPage && <Footer />}

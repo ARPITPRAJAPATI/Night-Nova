@@ -20,7 +20,7 @@ export default function VenueDetail() {
   const [showBooking, setShowBooking] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(-1) // -1 means closed
 
-  
+
   const live = useOsc(venue?.occupancy || 0, 3, 2600)
   const c = heatColor(live)
 
@@ -55,25 +55,25 @@ export default function VenueDetail() {
   return (
     <div className="bg-brand-dark min-h-screen pb-24">
       <div className="relative h-[65vh] w-full bg-black overflow-hidden border-b border-white/20">
-        <video 
-          autoPlay 
-          loop 
-          muted 
+        <video
+          autoPlay
+          loop
+          muted
           playsInline
           className="w-full h-full object-cover opacity-50 grayscale scale-105"
         >
           <source src="/venue.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-        
-        <button 
+
+        <button
           onClick={() => navigate(-1)}
           className="absolute top-24 left-6 sm:left-10 w-12 h-12 rounded-full glass hover:bg-white/10 transition-all flex items-center justify-center z-20 border border-white/10"
         >
           <ArrowLeft className="text-white" size={20} />
         </button>
 
-        <motion.div 
+        <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="absolute bottom-0 left-0 right-0 px-6 sm:px-10 pb-12 max-w-7xl mx-auto"
@@ -97,14 +97,14 @@ export default function VenueDetail() {
               </div>
               <p className="text-sm md:text-xl text-white/50 font-medium">{venue.address}</p>
             </div>
-            
+
             <div className="flex gap-4 mb-2">
               {[
                 { icon: <Phone size={20} />, href: venue.phone ? `tel:${venue.phone}` : null },
                 { icon: <Globe size={20} />, href: venue.website },
                 { icon: <Instagram size={20} />, href: venue.instagram },
               ].map((item, i) => item.href && (
-                <a 
+                <a
                   key={i}
                   href={item.href}
                   target="_blank"
@@ -120,12 +120,12 @@ export default function VenueDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 sm:px-10 mt-12 grid lg:grid-cols-3 gap-10">
-        
+
         <div className="lg:col-span-2 flex flex-col gap-10">
           {/* Live Status Card */}
           <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
             <div className="absolute -inset-20 opacity-10 pointer-events-none blur-[100px] rounded-full group-hover:opacity-20 transition-opacity duration-1000" style={{ background: c }} />
-            
+
             <div className="flex justify-between items-start mb-12 relative z-10">
               <div>
                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-2">Current Energy Pulse</h3>
@@ -141,13 +141,13 @@ export default function VenueDetail() {
                 </div>
               </div>
             </div>
-            
+
             <div className="relative z-10 space-y-4">
-               <OccBar occ={venue.occupancy} height={8} />
-               <div className="flex justify-between items-center text-[10px] font-bold tracking-widest text-white/20 uppercase">
-                 <span>Entrance</span>
-                 <span>Peak Energy</span>
-               </div>
+              <OccBar occ={venue.occupancy} height={8} />
+              <div className="flex justify-between items-center text-[10px] font-bold tracking-widest text-white/20 uppercase">
+                <span>Entrance</span>
+                <span>Peak Energy</span>
+              </div>
             </div>
           </div>
 
@@ -168,45 +168,45 @@ export default function VenueDetail() {
 
           {/* Atmosphere & Vibe */}
           <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5">
-             <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-8">Atmosphere & Vibe</h3>
-             <div className="flex flex-wrap gap-3 mb-10">
-               {venue.tags?.map(t => (
-                 <span key={t} className="px-6 py-3 rounded-2xl bg-white/5 border border-white/5 text-sm text-white/80 font-bold hover:bg-white/10 hover:border-white/20 transition-all cursor-default">
-                   {t}
-                 </span>
-               ))}
-             </div>
+            <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-8">Atmosphere & Vibe</h3>
+            <div className="flex flex-wrap gap-3 mb-10">
+              {venue.tags?.map(t => (
+                <span key={t} className="px-6 py-3 rounded-2xl bg-white/5 border border-white/5 text-sm text-white/80 font-bold hover:bg-white/10 hover:border-white/20 transition-all cursor-default">
+                  {t}
+                </span>
+              ))}
+            </div>
 
-             {venue.description && (
-               <div className="mb-10">
-                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Intel / Description</h3>
-                 <p className="text-white/70 text-sm md:text-base leading-relaxed">{venue.description}</p>
-               </div>
-             )}
+            {venue.description && (
+              <div className="mb-10">
+                <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Intel / Description</h3>
+                <p className="text-white/70 text-sm md:text-base leading-relaxed">{venue.description}</p>
+              </div>
+            )}
 
-             {venue.amenities && venue.amenities.length > 0 && (
-               <div>
-                 <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Available Amenities</h3>
-                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                   {venue.amenities.map(a => (
-                     <div key={a} className="flex items-center gap-2">
-                       <div className="w-1.5 h-1.5 bg-brand-accent rounded-full" />
-                       <span className="text-white/80 text-sm font-medium">{a}</span>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-             )}
+            {venue.amenities && venue.amenities.length > 0 && (
+              <div>
+                <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-4">Available Amenities</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {venue.amenities.map(a => (
+                    <div key={a} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-brand-accent rounded-full" />
+                      <span className="text-white/80 text-sm font-medium">{a}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Gallery (Day 24 prep) */}
+          {/* Gallery */}
           {venue.gallery && venue.gallery.length > 0 && (
             <div className="glass p-8 md:p-12 rounded-[2.5rem] border border-white/5">
               <h3 className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/40 mb-8">Visual Data</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {venue.gallery.map((g, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     onClick={() => setLightboxIndex(i)}
                     className="aspect-square rounded-2xl overflow-hidden border border-white/10 group cursor-pointer"
                   >
@@ -214,6 +214,7 @@ export default function VenueDetail() {
                   </div>
                 ))}
               </div>
+            </div>
           )}
 
           {/* Reviews Section (Day 26) */}
@@ -230,13 +231,13 @@ export default function VenueDetail() {
             </div>
 
             <div className="space-y-4">
-              <button 
+              <button
                 onClick={() => setShowBooking(true)}
                 className="w-full bg-white text-black hover:bg-white/80 transition-all font-bold uppercase tracking-[0.2em] text-[10px] py-6 rounded-none border border-white"
               >
                 Request Table
               </button>
-              
+
               <button className="w-full bg-black hover:bg-white hover:text-black transition-all text-white font-bold uppercase tracking-[0.2em] text-[10px] py-6 rounded-none border border-white/20">
                 Join Guestlist
               </button>
@@ -265,7 +266,7 @@ export default function VenueDetail() {
 
       {/* Lightbox Rendering */}
       {lightboxIndex >= 0 && venue.gallery && (
-        <Lightbox 
+        <Lightbox
           images={venue.gallery}
           currentIndex={lightboxIndex}
           onClose={() => setLightboxIndex(-1)}
